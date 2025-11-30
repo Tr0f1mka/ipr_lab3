@@ -1,0 +1,23 @@
+FROM python:3.10
+
+WORKDIR /app
+
+# Копируем зависимости сначала для кэширования
+COPY requirements.txt .
+
+# Устанавливаем зависимости
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Копируем весь проект
+COPY . .
+
+# Создаем скрипт запуска
+RUN echo '#!/bin/bash\n\
+pip install -r requirements.txt\n\
+python manage.py migrate\n\
+python manage.py runserver 0.0.0.0:8000' > /app/start.sh && \
+chmod +x /app/start.sh
+
+EXPOSE 8000
+
+CMD ["/app/start.sh"]
