@@ -5,13 +5,7 @@
 ---
 # local Start
 
- Terminal 1, Backend
-source venv/bin/activate
-python manage.py runserver
-
- Terminal 2, Frontend
-cd src
-python3 -m http.server 3000
+ docker-compose up - создание и запуск контейнера. После запуска сайт находится по адресу http://localhost:3000
 
 ---
 # Функционал сайта
