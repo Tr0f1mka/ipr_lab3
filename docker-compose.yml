@@ -1,6 +1,9 @@
 services:
   backend:
-    image: python:3.10
+    image: tr0f1mka/charity-backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
     working_dir: /app
     ports:
       - "${BACKEND_PORT}:8000"
@@ -15,15 +18,11 @@ services:
       - backend_network
       - frontend_network
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; r = requests.get('http://localhost:8000/api/health/'); exit(0) if r.status_code == 200 and r.json().get('status') == 'healthy' else exit(1)"]
+      test: ["CMD", "python", "-c", "import sys; import django; from django.db import connection; cursor = connection.cursor(); cursor.execute('SELECT 1'); sys.exit(0) if cursor else sys.exit(1)"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
-    command: >
-      sh -c "pip install -r requirements.txt &&
-             python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000"
     deploy:
       resources:
         limits:
@@ -35,17 +34,19 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: python:3.10
+    image: tr0f1mka/charity-frontend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
     working_dir: /app/src
     ports:
       - "${FRONTEND_PORT}:3000"
     volumes:
       - .:/app
-    command: python3 -m http.server 3000
     networks:
       - frontend_network
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; exit(0) if requests.get('http://localhost:3000/').status_code == 200 else exit(1)"]
+      test: ["CMD", "python", "-c", "import socket; s = socket.socket(); s.connect(('localhost', 3000)); s.close(); exit(0)"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -59,7 +60,8 @@ services:
           memory: 128M
           cpus: '0.25'
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
 networks:

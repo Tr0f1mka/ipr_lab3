@@ -1,7 +1,9 @@
-FROM python:3.9
+FROM python:3.9-alpine
 
 WORKDIR /app
 
 COPY . .
 
 EXPOSE 3000
+
+CMD ["sh", "-c", "cd /app/src && python -m http.server 3000"]
