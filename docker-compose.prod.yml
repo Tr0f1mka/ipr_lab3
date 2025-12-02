@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  backend:
+    image: tr0f1mka/charity-backend:latest
+    container_name: charity-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - DJANGO_SETTINGS_MODULE=charity_platform.settings
+      - SECRET_KEY=change-this-in-production-secret-key-123
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
+      - DATABASE_URL=sqlite:///db.sqlite3
+    volumes:
+      - charity_data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    image: tr0f1mka/charity-frontend:latest
+    container_name: charity-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  charity_data:
+    name: charity_platform_data
